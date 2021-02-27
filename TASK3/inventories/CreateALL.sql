@@ -2,56 +2,60 @@ USE MasterSport;
 
 CREATE TABLE Company
 (
-	Id INT PRIMARY KEY,
-	Name VARCHAR(20),
-	Address VARCHAR(20),
-	Telephone VARCHAR(20)
+	id INT PRIMARY KEY,
+	name  VARCHAR(20),
+	address VARCHAR(20),
+	telephone VARCHAR(20)
 )
+
 
 CREATE TABLE  Inventory
 (
-	Id INT IDENTITY,
-	Name VARCHAR(20),
-	Price VARCHAR(10),
-	Number_Persons INT, 
-	PRIMARY KEY(Id)
-); 
-
-CREATE TABLE  Hire_Inventory 
-(
-    Id INT PRIMARY KEY IDENTITY,
-	Name VARCHAR(20),
-    InventoryId INT,
-	CompanyId INT,
-    Type VARCHAR(20),
-	FOREIGN KEY (CompanyId)  REFERENCES Company (Id)
-);
-
-CREATE TABLE Supplement_Inventory_Hire 
-(
-	Hire_InventoryId  INT UNIQUE,
-	InventoryId INT UNIQUE,
-	FOREIGN KEY (Hire_InventoryId)  REFERENCES Hire_Inventory (Id),
-	FOREIGN KEY (InventoryId)  REFERENCES Inventory (Id)
+	id    INT PRIMARY KEY,
+	name  VARCHAR(20) UNIQUE,
+	price VARCHAR(10),
+	type  VARCHAR(10),
 );
 
 CREATE TABLE Client
 (
-	Id INT PRIMARY KEY,
-	Name VARCHAR(20),
-	Age INT,
-	Telephone VARCHAR(20),
-	InventoryId INT
+	id        INT PRIMARY KEY,
+	name      VARCHAR(20),
+	age       INT,
+	telephone VARCHAR(20) UNIQUE
 );
+
+CREATE TABLE  Hire_Inventory 
+(
+    id            INT PRIMARY KEY,
+	id_client     INT,
+	purchase_date DATE,
+	id_company    INT,
+	UNIQUE (id_client, purchase_date),
+	FOREIGN KEY (id_company)   REFERENCES Company (id),
+	FOREIGN KEY (id_client)    REFERENCES Client(id)
+);
+
 
 CREATE TABLE Payment
 (
-	ClientId INT,
-	InventoryId INT,
-	Type VARCHAR(10),
-	Payment_Amount INT,
-	FOREIGN KEY (ClientId) REFERENCES Client (Id),
-	FOREIGN KEY (InventoryId) REFERENCES Inventory (Id),
+    id                INT,
+	payment_Amount    INT,
+	type              VARCHAR(10),
+	id_hire_inventory INT UNIQUE,
+	FOREIGN KEY (id_hire_inventory) REFERENCES Hire_Inventory (id),
 )
+
+CREATE TABLE Inventory_List
+(
+    id                INT PRIMARY KEY,
+	id_inventory      INT UNIQUE,
+	id_hire_inventory INT,
+	FOREIGN KEY (id_inventory)      REFERENCES Inventory(id),
+	FOREIGN KEY (id_hire_inventory) REFERENCES Hire_Inventory(id)
+
+);
+
+
 
 
