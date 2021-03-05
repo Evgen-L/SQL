@@ -2,70 +2,81 @@ USE Ikea;
 
 
 
-CREATE TABLE Company
+CREATE TABLE company
 (
 	id        INT PRIMARY KEY,    
-	name      VARCHAR(20) UNIQUE,
-	address   VARCHAR(20),
-	telephone VARCHAR(20) UNIQUE
+	name      VARCHAR(20) UNIQUE NOT NULL,
+	address   VARCHAR(20) NOT NULL,
+	telephone VARCHAR(20) UNIQUE NOT NULL,
 )
 
-CREATE TABLE Storage
+CREATE TABLE storage
 (
 	id            INT PRIMARY KEY,
-	name          VARCHAR(20),
-	serial_number INT,
-	address       VARCHAR(20),
-	telephone     VARCHAR(20),
-	id_company    INT,
+	name          VARCHAR(20) NOT NULL,
+	serial_number INT NOT NULL,
+	address       VARCHAR(20) NOT NULL,
+	telephone     VARCHAR(20) NOT NULL,
+	id_company    INT NOT NULL,
 	UNIQUE(name, id_company),
-	FOREIGN KEY (id_company)  REFERENCES Company(id)
+	FOREIGN KEY (id_company)  REFERENCES company(id)
 )
 
-CREATE TABLE  Product
+CREATE TABLE  product
 (
 	id               INT PRIMARY KEY,
-	name             VARCHAR(20) UNIQUE,
-	price            VARCHAR(10),
-	type             VARCHAR(15),
-	date_manufacture DATE
+	name             VARCHAR(20) UNIQUE NOT NULL,
+	price            MONEY NOT NULL,
+	type             TINYINT NOT NULL,
+	date_manufacture DATE NOT NULL
 ); 
 
-CREATE TABLE  Product_in_storage
+CREATE TABLE  product_in_storage
 (
     id           INT PRIMARY KEY,
-    id_product   INT UNIQUE,
-	id_storage   INT,
-	date_arrival DATE,
-    FOREIGN KEY (id_storage)  REFERENCES Storage (id),
-	FOREIGN KEY (id_product)  REFERENCES Product (id)
+    id_product   INT UNIQUE NOT NULL,
+	id_storage   INT NOT NULL,
+	date_arrival DATE NOT NULL,
+    FOREIGN KEY (id_storage)  REFERENCES storage (id),
+	FOREIGN KEY (id_product)  REFERENCES product (id)
 );
 
-
-CREATE TABLE Client
-(
-	id        INT PRIMARY KEY,
-	name      VARCHAR(20),
-	age       INT,
-	telephone VARCHAR(20) UNIQUE
-);
-
-CREATE TABLE Order_history
+CREATE TABLE product_x_storage
 (
     id                    INT PRIMARY KEY,
-	id_client             INT,
-	id_product_in_storage INT UNIQUE,
-	date_order            DATE,
-	FOREIGN KEY (id_client)              REFERENCES Client (id),
-	FOREIGN KEY (id_product_in_storage)  REFERENCES Product_in_storage (id),
+	id_product            INT UNIQUE NOT NULL,
+	id_product_in_storage INT NOT NULL,
+	FOREIGN KEY (id_product)            REFERENCES product(id),
+	FOREIGN KEY (id_product_in_storage) REFERENCES product_in_storage(id)
 )
 
 
 
-CREATE TABLE Payment
+
+CREATE TABLE client
 (
-  id_order_history INT PRIMARY KEY REFERENCES Order_history (id),
-  type             VARCHAR(10),
+	id        INT PRIMARY KEY,
+	name      VARCHAR(20) NOT NULL,
+	age       DATE NOT NULL,
+	telephone VARCHAR(20) UNIQUE NOT NULL
+);
+
+CREATE TABLE orderH
+(
+    id                    INT PRIMARY KEY,
+	id_client             INT NOT NULL,
+	id_product_in_storage INT UNIQUE NOT NULL,
+	date_order            DATE NOT NULL,
+	FOREIGN KEY (id_client)              REFERENCES client (id),
+	FOREIGN KEY (id_product_in_storage)  REFERENCES product_in_storage (id),
+)
+
+
+
+CREATE TABLE payment
+(
+  id_order_history INT PRIMARY KEY REFERENCES orderH (id),
+  type             TINYINT,
   payment_amount   INT
 );
 

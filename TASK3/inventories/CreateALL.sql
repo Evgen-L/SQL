@@ -1,58 +1,58 @@
 USE MasterSport;
 
-CREATE TABLE Company
+CREATE TABLE company
 (
 	id INT PRIMARY KEY,
-	name  VARCHAR(20),
-	address VARCHAR(20),
-	telephone VARCHAR(20)
+	name  VARCHAR(20) NOT NULL,
+	address VARCHAR(20) NOT NULL,
+	telephone VARCHAR(20) NOT NULL
 )
 
 
-CREATE TABLE  Inventory
+CREATE TABLE  inventory
 (
 	id    INT PRIMARY KEY,
-	name  VARCHAR(20) UNIQUE,
-	price VARCHAR(10),
-	type  VARCHAR(10),
+	name  VARCHAR(20) UNIQUE NOT NULL,
+	price MONEY NOT NULL,
+	type  TINYINT NOT NULL
 );
 
-CREATE TABLE Client
+CREATE TABLE client
 (
 	id        INT PRIMARY KEY,
-	name      VARCHAR(20),
-	age       INT,
-	telephone VARCHAR(20) UNIQUE
+	name      VARCHAR(20) NOT NULL,
+	age       DATE NOT NULL,
+	telephone VARCHAR(20) UNIQUE NOT NULL
 );
 
-CREATE TABLE  Hire_Inventory 
+CREATE TABLE  hire_inventory 
 (
     id            INT PRIMARY KEY,
-	id_client     INT,
-	purchase_date DATE,
-	id_company    INT,
+	id_client     INT NOT NULL,
+	purchase_date DATE NOT NULL,
+	id_company    INT NOT NULL,
 	UNIQUE (id_client, purchase_date),
-	FOREIGN KEY (id_company)   REFERENCES Company (id),
-	FOREIGN KEY (id_client)    REFERENCES Client(id)
+	FOREIGN KEY (id_company)   REFERENCES company (id),
+	FOREIGN KEY (id_client)    REFERENCES client(id)
 );
 
 
-CREATE TABLE Payment
+CREATE TABLE payment
 (
-    id                INT,
-	payment_Amount    INT,
-	type              VARCHAR(10),
-	id_hire_inventory INT UNIQUE,
-	FOREIGN KEY (id_hire_inventory) REFERENCES Hire_Inventory (id),
+    id                INT NOT NULL,
+	payment_amount    INT NOT NULL,
+	type              TINYINT NOT NULL,
+	id_hire_inventory INT UNIQUE NOT NULL,
+	FOREIGN KEY (id_hire_inventory) REFERENCES hire_inventory (id),
 )
 
-CREATE TABLE Inventory_List
+CREATE TABLE inventory_x_hire
 (
     id                INT PRIMARY KEY,
-	id_inventory      INT UNIQUE,
-	id_hire_inventory INT,
-	FOREIGN KEY (id_inventory)      REFERENCES Inventory(id),
-	FOREIGN KEY (id_hire_inventory) REFERENCES Hire_Inventory(id)
+	id_inventory      INT UNIQUE NOT NULL,
+	id_hire_inventory INT NOT NULL,
+	FOREIGN KEY (id_inventory)      REFERENCES inventory(id),
+	FOREIGN KEY (id_hire_inventory) REFERENCES hire_Inventory(id)
 
 );
 
