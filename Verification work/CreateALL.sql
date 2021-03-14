@@ -26,7 +26,7 @@ CREATE TABLE  book
 	price        MONEY NOT NULL,
 	id_author    INT NOT NULL,
 	genre        TINYINT NOT NULL,
-	number_pages INT,
+	number_pages INT NOT NULL,
 	UNIQUE(name, id_author),
 	FOREIGN KEY (id_author)   REFERENCES author (id)
 );
@@ -37,7 +37,7 @@ CREATE TABLE reader
 	name      VARCHAR(20) NOT NULL,
 	age       DATE NOT NULL,
 	telephone VARCHAR(20) UNIQUE NOT NULL,
-	gender    TINYINT
+	gender    TINYINT NOT NULL
 );
 
 
