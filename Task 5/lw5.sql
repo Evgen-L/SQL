@@ -66,7 +66,9 @@ GROUP BY room_category.name, hotel.name
 --#5 Дать список последних проживавших клиентов по всем комнатам гостиницы “Космос”, выехавшим в апреле с указанием даты выезда
 --/
 -- Provide a list of the last clients who stayed in all rooms of the Cosmos hotel who left in April, indicating the date of departure
-SELECT TOP 50 client.name AS Client, room.number AS room_number, room_category.name AS category, room_in_booking.checkout_date, hotel.name AS hotel  
+drop view stud_in_apr
+CREATE VIEW stud_in_apr AS
+SELECT   room.number  AS room_number, MAX(room_in_booking.checkout_date) AS max_checkout_date
 FROM client 
 JOIN booking ON client.id_client = booking.id_client 
 JOIN room_in_booking ON booking.id_booking = room_in_booking.id_booking
@@ -74,8 +76,17 @@ JOIN room ON room_in_booking.id_room = room.id_room
 JOIN hotel ON room.id_hotel = hotel.id_hotel
 JOIN room_category ON room.id_room_category = room_category.id_room_category
 WHERE  (MONTH(room_in_booking.checkout_date) = '04') AND (hotel.name = 'Космос')
-ORDER BY room_in_booking.checkout_date DESC
+GROUP BY room.number
+GO
+Select * FROM stud_in_apr;
+SELECT client.name AS Client, stud_in_apr.room_number, stud_in_apr.max_checkout_date
+FROM room_in_booking
+JOIN stud_in_apr  ON room_in_booking.checkout_date = stud_in_apr.max_checkout_date AND room_in_booking.id_room = stud_in_apr.room_number
+JOIN booking ON room_in_booking.id_booking = booking.id_booking
+JOIN client ON booking.id_client = client.id_client
 
+
+--уникальный список комнат по последним датам проживания
 --#6 Продлить на 2 дня дату проживания в гостинице “Космос” всем клиентам комнат категории “Бизнес”, которые заселились 10 мая 
 --  / 
 --  Extend by 2 days the date of stay at the Cosmos Hotel for all clients of the Business rooms who checked in on May 10
@@ -113,7 +124,7 @@ WHERE checkin_date = '2019-05-10'
 SELECT A.id_room_in_booking, A.id_booking, A.id_room, A.checkin_date, A.checkout_date, B.id_room_in_booking, B.id_booking, B.id_room, B.checkin_date, B.checkout_date 
 FROM room_in_booking A 
 JOIN room_in_booking B ON A.id_room = B.id_room
-WHERE (A.id_room_in_booking != B.id_room_in_booking) AND ((A.checkin_date >= B.checkin_date AND A.checkin_date < B.checkout_date) OR (A.checkout_date > B.checkin_date))           
+WHERE (A.id_room_in_booking != B.id_room_in_booking) AND ((A.checkin_date >= B.checkin_date AND A.checkin_date < B.checkout_date) OR (A.checkout_date > B.checkin_date)) AND (A.id_room = 42)
 
 --#8 Создать бронирование в транзакции / Create a booking in a transaction
 BEGIN TRANSACTION
