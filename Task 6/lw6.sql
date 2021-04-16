@@ -27,7 +27,8 @@ ALTER TABLE [order] ADD
 	 REFERENCES pharmacy(id_pharmacy)
 
 
---#2 Issue information on all orders of the medicine "Corderon" of the Company "Argus" indicating the names of pharmacies, dates, volumes of orders "
+--#2 Выдать информацию по всем заказам лекарства “Кордерон” компании “Аргус” с указанием названий аптек, дат, объема заказов. 
+--Issue information on all orders of the medicine "Corderon" of the Company "Argus" indicating the names of pharmacies, dates, volumes of orders "
 SELECT pharmacy.name AS pharmacy, [order].date, [order].quantity
 FROM [order] 
 JOIN pharmacy ON [order].id_pharmacy = pharmacy.id_pharmacy
@@ -37,7 +38,10 @@ JOIN company ON production.id_company = company.id_company
 WHERE (company.name = 'Аргус') AND (medicine.name = 'Кордерон')
 
 
---#3 Provide a list of Pharma medicines, for which orders were not made until January 25.
+--#3 --Дать список лекарств компании “Фарма”, на которые не были сделаны заказы до 25 января. 
+--Provide a list of Pharma medicines, for which orders were not made until January 25.
+
+
 SELECT medicine.name AS medicine
 FROM medicine
 WHERE medicine.name NOT IN (SELECT medicine.name
@@ -48,7 +52,9 @@ WHERE medicine.name NOT IN (SELECT medicine.name
 							WHERE (company.name = 'Фарма') AND ([order].date < '2019-01-25') )
 							
 
---#4 Give the minimum and maximum scores for drugs to each company that has placed at least 120 orders
+--#4 --Дать минимальный и максимальный баллы лекарств каждой фирмы, которая оформила не менее 120 заказов 
+--Give the minimum and maximum scores for drugs to each company that has placed at least 120 orders
+
 SELECT dealer.name, MAX(production.rating) AS max_mark, MIN(production.rating) AS min_mark
 FROM [order]
 JOIN production ON [order].id_production = production.id_production
@@ -61,7 +67,8 @@ WHERE [order].id_dealer  IN (SELECT [order].id_dealer
 							)
 GROUP BY dealer.name
 
---#5 Provide lists of pharmacies that have made orders for all dealers of the AstraZeneca company. If the dealer has no orders, put NULL in the name of the pharmacy.
+--#5 Дать списки сделавших заказы аптек по всем дилерам компании “AstraZeneca”. Если у дилера нет заказов, в названии аптеки проставить NULL. 
+--Provide lists of pharmacies that have made orders for all dealers of the AstraZeneca company. If the dealer has no orders, put NULL in the name of the pharmacy.
 SELECT dealer.name, pharmacy.name AS pharmacy
 FROM dealer 
 JOIN company ON dealer.id_company = company.id_company
@@ -69,7 +76,8 @@ LEFT JOIN [order] ON [order].id_dealer = dealer.id_dealer
 LEFT JOIN pharmacy ON [order].id_pharmacy = pharmacy.id_pharmacy
 WHERE company.name = 'AstraZeneca'
 
---#6 Reduce the cost of all drugs by 20% if it exceeds 3000, and the duration of treatment is no more than 7 days.
+--#6 Уменьшить на 20% стоимость всех лекарств, если она превышает 3000, а длительность лечения не более 7 дней.
+--Reduce the cost of all drugs by 20% if it exceeds 3000, and the duration of treatment is no more than 7 days.
 SELECT medicine.name AS medicine, production.price, medicine.cure_duration
 FROM production 
 JOIN medicine ON production.id_medicine = medicine.id_medicine
