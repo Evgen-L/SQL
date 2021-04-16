@@ -62,11 +62,11 @@ WHERE [order].id_dealer  IN (SELECT [order].id_dealer
 GROUP BY dealer.name
 
 --#5 Provide lists of pharmacies that have made orders for all dealers of the AstraZeneca company. If the dealer has no orders, put NULL in the name of the pharmacy.
-SELECT pharmacy.name AS pharmacy
-FROM [order] 
-JOIN pharmacy ON [order].id_pharmacy = pharmacy.id_pharmacy
-JOIN dealer ON [order].id_dealer = dealer.id_dealer
+SELECT dealer.name, pharmacy.name AS pharmacy
+FROM dealer 
 JOIN company ON dealer.id_company = company.id_company
+LEFT JOIN [order] ON [order].id_dealer = dealer.id_dealer
+LEFT JOIN pharmacy ON [order].id_pharmacy = pharmacy.id_pharmacy
 WHERE company.name = 'AstraZeneca'
 
 --#6 Reduce the cost of all drugs by 20% if it exceeds 3000, and the duration of treatment is no more than 7 days.
