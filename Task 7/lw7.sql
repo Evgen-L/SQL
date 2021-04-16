@@ -41,38 +41,86 @@ GO
 SELECT * FROM studet_mark_inf 
 
 
---#3
+--|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
+--#3
+--Из чего будет состоять моя процедура:
+
+--получение предметов, на которые должны ходить студенты определенной группы (1)
+SELECT DISTINCT subject.id_subject, subject.name AS subject
+FROM mark
+JOIN student ON mark.id_student = student.id_student
+JOIN lesson ON mark.id_lesson = lesson.id_lesson
+JOIN subject ON lesson.id_subject = subject.id_subject
+JOIN [group] ON lesson.id_group = [group].id_group
+WHERE [group].name = 'ПС' 
+
+--получение студентов определенной группы и занятий на которые эти студенты должны ходить (2)
+SELECT LEFT(student.name, CHARINDEX(' ', student.name, 1)) AS student, subject_group.name AS subject
+FROM student
+JOIN (SELECT DISTINCT subject.id_subject, subject.name 
+	  FROM mark
+	  JOIN student ON mark.id_student = student.id_student
+	  JOIN lesson ON mark.id_lesson = lesson.id_lesson
+	  JOIN subject ON lesson.id_subject = subject.id_subject
+	  JOIN [group] ON lesson.id_group = [group].id_group
+	  WHERE [group].name = 'ПС') AS subject_group 
+ON student.id_student = subject_group.id_subject OR student.id_student != subject_group.id_subject
+JOIN [group] ON student.id_group = [group].id_group  
+WHERE [group].name = 'ПС'
+ORDER BY student.name
+
+--получение из журнала id студента определенной группы и id предмета на которые этот студент ходил (3)
+ SELECT student.id_student AS student_id, subject.id_subject AS subject_id
+	  FROM mark
+	  JOIN student ON mark.id_student = student.id_student
+	  JOIN lesson ON mark.id_lesson = lesson.id_lesson
+	  JOIN subject ON lesson.id_subject = subject.id_subject
+	  JOIN [group] ON lesson.id_group = [group].id_group
+	  WHERE [group].name = 'ПС'
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DROP PROCEDURE print_debtors
 CREATE PROCEDURE print_debtors
 @one_group nvarchar(50) 
 AS
-SELECT student.name, subject.name
-FROM mark
-JOIN student ON mark.id_student = student.id_student
-JOIN lesson ON mark.id_lesson = lesson.id_lesson
-JOIN subject ON lesson.id_subject = subject.id_subject
-JOIN [group] ON lesson.id_group = [group].id_group
-WHERE ([group].name =  @one_group)--mark.mark = NULL
+SELECT student_subject_of_group.student, student_subject_of_group.subject 
+FROM 
+(
+	SELECT student.id_student, subject_group.id_subject, student.name AS student, subject_group.name AS subject
+	FROM student
+	JOIN (SELECT DISTINCT subject.id_subject, subject.name 
+		  FROM mark
+		  JOIN student ON mark.id_student = student.id_student
+		  JOIN lesson ON mark.id_lesson = lesson.id_lesson
+		  JOIN subject ON lesson.id_subject = subject.id_subject
+		  JOIN [group] ON lesson.id_group = [group].id_group
+		  WHERE [group].name = @one_group) AS subject_group 
+	ON student.id_student = subject_group.id_subject OR student.id_student != subject_group.id_subject
+	JOIN [group] ON student.id_group = [group].id_group  
+	WHERE [group].name = @one_group
+) AS student_subject_of_group
+
+WHERE NOT EXISTS ( SELECT * FROM (
+									  SELECT student.id_student AS student_id, subject.id_subject AS subject_id --(3)
+									  FROM mark
+									  JOIN student ON mark.id_student = student.id_student
+									  JOIN lesson ON mark.id_lesson = lesson.id_lesson
+									  JOIN subject ON lesson.id_subject = subject.id_subject
+									  JOIN [group] ON lesson.id_group = [group].id_group
+									  WHERE [group].name = @one_group
+								  ) AS  book_visits_of_certain_group
+					WHERE	student_subject_of_group.id_student = book_visits_of_certain_group.student_id AND	student_subject_of_group.id_subject = book_visits_of_certain_group.subject_id
+				 )
+ORDER BY student_subject_of_group.subject
 GO
 
-ALTER PROCEDURE print_debtors
-@one_group nvarchar(50) 
-AS
-SELECT LEFT(student.name, CHARINDEX(' ', student.name, 1)) AS surname_student, subject.name AS subject, [group].name
-FROM mark
-JOIN student ON mark.id_student = student.id_student
-JOIN lesson ON mark.id_lesson = lesson.id_lesson
-JOIN subject ON lesson.id_subject = subject.id_subject
-JOIN [group] ON lesson.id_group = [group].id_group
-WHERE ([group].name =  @one_group) AND (mark.mark IS NULL)--mark.mark = NULL
-GO
+DECLARE @one_group nvarchar(50) = 'ИВТ'
+EXEC print_debtors @one_group
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-DECLARE @one_group nvarchar(50) = 'ПС'
-EXEC print_debtors 'ПС'
-
-
-
-
+--чисто, чтобы посмотреть, кто на что ходит
 SELECT student.name AS student, [group].name AS 'group', subject.name AS subject, mark.mark, date 
 FROM mark
 JOIN student ON mark.id_student = student.id_student
@@ -80,13 +128,7 @@ JOIN lesson ON mark.id_lesson = lesson.id_lesson
 JOIN subject ON lesson.id_subject = subject.id_subject
 JOIN [group] ON lesson.id_group = [group].id_group
 ORDER BY [group], subject, date
-
-SELECT * FROM [group]
-SELECT * FROM lesson
-SELECT * FROM mark
-SELECT * FROM subject
-SELECT * FROM student
-
+--|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 --#4 Дать среднюю оценку студентов по каждому предмету для тех предметов, по которым занимается не менее 35 студентов.
@@ -193,3 +235,10 @@ CREATE NONCLUSTERED INDEX [IX_lesson_date] ON
 (
    [date] ASC
 )
+
+
+SELECT * FROM [group]
+SELECT * FROM lesson
+SELECT * FROM mark
+SELECT * FROM subject
+SELECT * FROM student
