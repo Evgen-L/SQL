@@ -125,7 +125,7 @@ WHERE checkin_date = '2019-05-10'
 SELECT A.id_room_in_booking, A.id_booking, A.id_room, A.checkin_date, A.checkout_date, B.id_room_in_booking, B.id_booking, B.id_room, B.checkin_date, B.checkout_date 
 FROM room_in_booking A 
 JOIN room_in_booking B ON A.id_room = B.id_room
-WHERE (A.id_room_in_booking != B.id_room_in_booking) AND ((A.checkin_date >= B.checkin_date AND A.checkin_date < B.checkout_date) OR (A.checkout_date > B.checkin_date)) AND (A.id_room = 42)
+WHERE (A.id_room_in_booking != B.id_room_in_booking) AND ((A.checkin_date >= B.checkin_date AND A.checkin_date < B.checkout_date) OR ((A.checkout_date > B.checkin_date) AND (A.checkin_date < B.checkout_date)))
 
 --#8 Создать бронирование в транзакции / Create a booking in a transaction
 BEGIN TRANSACTION
