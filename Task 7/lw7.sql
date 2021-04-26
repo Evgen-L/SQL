@@ -54,35 +54,33 @@ SELECT * FROM studet_mark_inf
 --Debtors are students who do not have a grade in a subject taught in a group.
 --Issue as a procedure, at the entrance to the group identifier.
 
-
---result
-SELECT all_students.studentName, all_students.subjectName  FROM
-	(SELECT DISTINCT student.id_student AS student_id, student.name studentName, lesson.id_subject AS subject_id, subject.name subjectName
+DROP PROCEDURE print_debtors
+CREATE PROCEDURE print_debtors
+@one_group nvarchar(50) 
+AS
+SELECT all_students.student, all_students.subject  FROM
+	(SELECT DISTINCT student.id_student AS student_id, student.name AS student, lesson.id_subject AS subject_id, subject.name AS subject
 	FROM lesson
 	JOIN [group] ON lesson.id_group = [group].id_group
 	JOIN student ON [group].id_group = student.id_group
 	JOIN subject ON lesson.id_subject = subject.id_subject
-	WHERE [group].name = N'ПС') AS  all_students
+	WHERE [group].name = @one_group) AS  all_students
 LEFT JOIN (
 	SELECT DISTINCT student.id_student AS student_id, lesson.id_subject AS subject_id
 	FROM mark
 	JOIN student ON mark.id_student = student.id_student
 	JOIN lesson ON mark.id_lesson = lesson.id_lesson
 	JOIN [group] ON lesson.id_group = [group].id_group
-	WHERE [group].name = N'ПС'
+	WHERE [group].name = @one_group
 ) AS stud_with_marks ON all_students.student_id = stud_with_marks.student_id 
 	AND all_students.subject_id = stud_with_marks.subject_id 
 
 WHERE   stud_with_marks.student_id is NULL
+GO
 
 
-
-
-
-DECLARE @one_group nvarchar(50) = 'ПС'
+DECLARE @one_group nvarchar(50) = 'ИВТ'
 EXEC print_debtors @one_group
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 
 --#4 Дать среднюю оценку студентов по каждому предмету для тех предметов, по которым занимается не менее 35 студентов.
