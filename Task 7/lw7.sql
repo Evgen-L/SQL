@@ -30,13 +30,14 @@ ALTER TABLE mark ADD
 
 --#2 Выдать оценки студентов по информатике если они обучаются данному предмету. Оформить выдачу данных с использованием view.
 --Give grades to computer science students if they are studying a given subject. Checkout data output using view.
+drop VIEW studet_mark_inf
 CREATE VIEW studet_mark_inf AS
 SELECT student.name AS student, mark.mark 
 FROM mark
 JOIN student ON mark.id_student = student.id_student
 JOIN lesson ON mark.id_lesson = lesson.id_lesson
 JOIN subject ON lesson.id_subject = subject.id_subject
-WHERE subject.name = 'Информатика'
+WHERE subject.name = N'Информатика'
 GO
 
 SELECT * FROM studet_mark_inf 
@@ -54,95 +55,34 @@ SELECT * FROM studet_mark_inf
 --Issue as a procedure, at the entrance to the group identifier.
 
 
---Из чего будет состоять процедура:
---What the procedure will consist of:
+--result
+SELECT all_students.studentName, all_students.subjectName  FROM
+	(SELECT DISTINCT student.id_student AS student_id, student.name studentName, lesson.id_subject AS subject_id, subject.name subjectName
+	FROM lesson
+	JOIN [group] ON lesson.id_group = [group].id_group
+	JOIN student ON [group].id_group = student.id_group
+	JOIN subject ON lesson.id_subject = subject.id_subject
+	WHERE [group].name = N'ПС') AS  all_students
+LEFT JOIN (
+	SELECT DISTINCT student.id_student AS student_id, lesson.id_subject AS subject_id
+	FROM mark
+	JOIN student ON mark.id_student = student.id_student
+	JOIN lesson ON mark.id_lesson = lesson.id_lesson
+	JOIN [group] ON lesson.id_group = [group].id_group
+	WHERE [group].name = N'ПС'
+) AS stud_with_marks ON all_students.student_id = stud_with_marks.student_id 
+	AND all_students.subject_id = stud_with_marks.subject_id 
 
---получение предметов, на которые должны ходить студенты определенной группы (1)
---getting items that students of a certain group should attend (1)
-SELECT DISTINCT subject.id_subject, subject.name AS subject
-FROM lesson
-JOIN subject ON lesson.id_subject = subject.id_subject
-JOIN [group] ON lesson.id_group = [group].id_group
-WHERE [group].name = 'ПС' 
-
-
---получение студентов определенной группы и занятий на которые эти студенты должны ходить (2)
---getting students of a certain group and classes to which these students should go (2)
-SELECT student.name AS student, subject_group.subject AS subject
-FROM student
-JOIN (
-		SELECT DISTINCT subject.id_subject, subject.name AS subject --(1)
-		FROM lesson
-		JOIN subject ON lesson.id_subject = subject.id_subject
-		JOIN [group] ON lesson.id_group = [group].id_group
-		WHERE [group].name = 'ПС'-------------------------------------(/1)
-     ) AS subject_group 
-ON student.id_student = subject_group.id_subject OR student.id_student != subject_group.id_subject
-JOIN [group] ON student.id_group = [group].id_group  
-WHERE [group].name = 'ПС' 
+WHERE   stud_with_marks.student_id is NULL
 
 
---получение из журнала id студента определенной группы и id предмета на которые этот студент ходил (3)
---obtaining from the journal the id of a student of a certain group and the id of the subject to which this student went (3)
-SELECT student.id_student AS student_id, lesson.id_subject AS subject_id
-FROM mark
-JOIN student ON mark.id_student = student.id_student
-JOIN lesson ON mark.id_lesson = lesson.id_lesson
-JOIN [group] ON lesson.id_group = [group].id_group
-WHERE [group].name = 'ПС'
 
 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---task
-DROP PROCEDURE print_debtors
-CREATE PROCEDURE print_debtors
-@one_group nvarchar(50) 
-AS
-SELECT LEFT(student_subject_of_group.student, CHARINDEX(' ', student_subject_of_group.student, 1)) AS student, student_subject_of_group.subject 
-FROM 
-(
-	SELECT student.id_student AS student_id,subject_group.id_subject AS subject_id, student.name AS student, subject_group.subject AS subject----------(2)
-	FROM student
-	JOIN (
-			SELECT DISTINCT subject.id_subject, subject.name AS subject --(1)
-			FROM lesson
-			JOIN subject ON lesson.id_subject = subject.id_subject
-			JOIN [group] ON lesson.id_group = [group].id_group
-			WHERE [group].name = @one_group-------------------------------(/1)
-		 ) AS subject_group 
-	ON student.id_student = subject_group.id_subject OR student.id_student != subject_group.id_subject
-	JOIN [group] ON student.id_group = [group].id_group  
-	WHERE [group].name = @one_group----------------------------------------------------------------------------------------------------------------------(/2)
-	
-) AS student_subject_of_group
-WHERE NOT EXISTS ( SELECT * FROM (
-									    SELECT student.id_student AS student_id, lesson.id_subject AS subject_id --(3)
-										FROM mark
-										JOIN student ON mark.id_student = student.id_student
-										JOIN lesson ON mark.id_lesson = lesson.id_lesson
-										JOIN [group] ON lesson.id_group = [group].id_group
-										WHERE [group].name = @one_group--------------------------------------------(/3)
-								  ) AS  book_visits_of_certain_group
-					WHERE	student_subject_of_group.student_id = book_visits_of_certain_group.student_id AND student_subject_of_group.subject_id = book_visits_of_certain_group.subject_id
-				 )
-ORDER BY student_subject_of_group.subject
-GO
 
 DECLARE @one_group nvarchar(50) = 'ПС'
 EXEC print_debtors @one_group
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
---посмотреть, кто на какие предметы приходил по определенной группе
---see who came to what subjects for a certain group
-SELECT student.name AS student, [group].name AS 'group', subject.name AS subject, mark.mark, date 
-FROM mark
-JOIN student ON mark.id_student = student.id_student
-JOIN lesson ON mark.id_lesson = lesson.id_lesson
-JOIN subject ON lesson.id_subject = subject.id_subject
-JOIN [group] ON lesson.id_group = [group].id_group
-WHERE [group].name = @one_group
-ORDER BY [group], subject, date
---|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 --#4 Дать среднюю оценку студентов по каждому предмету для тех предметов, по которым занимается не менее 35 студентов.
