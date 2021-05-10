@@ -85,14 +85,14 @@ EXEC print_debtors @one_group
 
 --#4 Дать среднюю оценку студентов по каждому предмету для тех предметов, по которым занимается не менее 35 студентов.
 --Give an average student grade in each subject for those subjects in which at least 35 students are engaged.
-SELECT subject.name AS subject, AVG(mark.mark) AS average_mark
-FROM mark
-JOIN student ON mark.id_student = student.id_student
-JOIN lesson ON mark.id_lesson = lesson.id_lesson
-JOIN subject ON lesson.id_subject = subject.id_subject
+SELECT DISTINCT  subject.name AS subject, COUNT (DISTINCT student.name) AS quantity_students, AVG(mark.mark) AS average_mark
+FROM lesson
 JOIN [group] ON lesson.id_group = [group].id_group
+JOIN student ON [group].id_group = student.id_group
+JOIN subject ON lesson.id_subject = subject.id_subject
+JOIN mark ON mark.id_lesson = lesson.id_lesson
 GROUP BY subject.name
-HAVING COUNT(DISTINCT student.name) >= 35
+HAVING  COUNT  (DISTINCT student.name) >= 35 
 
 --#5 Дать оценки студентов специальности ВМ по всем проводимым предметам с указанием группы, фамилии, предмета, даты. При отсутствии оценки заполнить значениями NULL поля оценки.
 --To give assessments of students of the specialty VM in all subjects with an indication of the group, surname, subject, date. If there is no assessment, fill in the assessment fields with NULL values.
@@ -197,3 +197,6 @@ SELECT * FROM lesson
 SELECT * FROM mark
 SELECT * FROM subject
 SELECT * FROM student
+
+
+	
