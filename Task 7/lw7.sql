@@ -79,13 +79,13 @@ WHERE   stud_with_marks.student_id is NULL
 GO
 
 
-DECLARE @one_group nvarchar(50) = 'ИВТ'
+DECLARE @one_group nvarchar(50) = 'ВМ'
 EXEC print_debtors @one_group
 
 
 --#4 Дать среднюю оценку студентов по каждому предмету для тех предметов, по которым занимается не менее 35 студентов.
 --Give an average student grade in each subject for those subjects in which at least 35 students are engaged.
-SELECT DISTINCT  subject.name AS subject, COUNT (DISTINCT student.name) AS quantity_students, AVG(mark.mark) AS average_mark
+SELECT subject.name AS subject, COUNT (DISTINCT student.name) AS quantity_students, AVG(mark.mark) AS average_mark
 FROM lesson
 JOIN [group] ON lesson.id_group = [group].id_group
 JOIN student ON [group].id_group = student.id_group
@@ -96,53 +96,49 @@ HAVING  COUNT  (DISTINCT student.name) >= 35
 
 --#5 Дать оценки студентов специальности ВМ по всем проводимым предметам с указанием группы, фамилии, предмета, даты. При отсутствии оценки заполнить значениями NULL поля оценки.
 --To give assessments of students of the specialty VM in all subjects with an indication of the group, surname, subject, date. If there is no assessment, fill in the assessment fields with NULL values.
-DROP VIEW student_BM 
-CREATE VIEW student_BM AS
-SELECT student.name AS student, student.id_student, [group].name AS 'group'
-FROM student
-JOIN [group] ON student.id_group = [group].id_group 
-WHERE [group].name = 'ВМ'
-GO
 
-
-SELECT * FROM student_BM
- 
-SELECT student, LEFT(student, CHARINDEX(' ', student, 1)) AS surname_student, [group], subject.name, mark.mark, lesson.date
-FROM student_BM
-LEFT JOIN mark ON student_BM.id_student = mark.id_student
-LEFT JOIN lesson ON mark.id_lesson = lesson.id_lesson 
-LEFT JOIN subject ON lesson.id_subject = subject.id_subject
+--LEFT(student_BM.id_student, CHARINDEX(' ', student_BM.id_student, 1)) AS surname_student
+SELECT DISTINCT student.name AS student, [group].name AS 'group', subject.name AS subject, mark.mark, lesson.date --task itself
+FROM lesson
+JOIN [group] ON lesson.id_group = [group].id_group --вопрос, а на что ориентируется LEFT JOIN в синтаксисе, на название таблицы или на равенство? на равенство
+JOIN student ON student.id_group = [group].id_group
+JOIN subject ON lesson.id_subject = subject.id_subject
+LEFT JOIN mark ON student.id_student = mark.id_student
+WHERE [group].name = 'ВМ' 
+ORDER BY mark.mark DESC, subject.name, lesson.date DESC
 
 
 --#6 Всем студентам специальности ПС, получившим оценки меньшие 5 по предмету БД до 12.05, повысить эти оценки на 1 балл.
 --All students of the specialty PS, who received grades less than 5 in the subject of DB before 12.05, increase these grades by 1 point.
 CREATE VIEW student_PS AS
-SELECT student.name AS student, student.id_student, [group].name AS 'group'
+SELECT student.name AS student, student.id_student, [group].name AS 'group'--all students from PS group
 FROM student
 JOIN [group] ON student.id_group = [group].id_group 
 WHERE [group].name = 'ПС'
 GO
 
+--the log of visits of the PS group on the subject of Data Base before 12.05.2019
 SELECT student,  [group], subject.name, mark.mark, lesson.date
 FROM student_PS
-JOIN mark ON student_PS.id_student = mark.id_student
-JOIN lesson ON mark.id_lesson = lesson.id_lesson 
+LEFT JOIN mark ON student_PS.id_student = mark.id_student
+JOIN lesson ON lesson.id_lesson = mark.id_lesson 
 JOIN subject ON lesson.id_subject = subject.id_subject
 WHERE (subject.name = 'БД') AND (lesson.date < '2019-05-12')
 ORDER BY lesson.date
 
-CREATE VIEW book_student_PS AS
-SELECT mark.id_mark
+DROP VIEW log_visits_PS_DB
+CREATE VIEW log_visits_PS_DB AS
+SELECT student,  [group], subject.name AS subject_name, mark.mark AS mark, lesson.date AS lesson_date
 FROM student_PS
-JOIN mark ON student_PS.id_student = mark.id_student
-JOIN lesson ON mark.id_lesson = lesson.id_lesson 
+LEFT JOIN mark ON student_PS.id_student = mark.id_student
+JOIN lesson ON lesson.id_lesson = mark.id_lesson 
 JOIN subject ON lesson.id_subject = subject.id_subject
-WHERE (subject.name = 'БД') AND (lesson.date < '2019-05-12')
+WHERE (subject.name = 'БД')
 GO
 
-UPDATE mark 
-SET mark.mark = mark.mark + 1
-WHERE mark.mark < 5
+UPDATE  log_visits_PS_DB
+SET mark = mark + 1
+WHERE (mark) < 5 AND (lesson_date < '2019-05-12')
 
 --#7 Add required indexes.
 --student
@@ -195,8 +191,6 @@ CREATE NONCLUSTERED INDEX [IX_lesson_date] ON
 SELECT * FROM [group]
 SELECT * FROM lesson
 SELECT * FROM mark
+ORDER BY mark.id_student, mark.id_lesson ASC
 SELECT * FROM subject
 SELECT * FROM student
-
-
-	
