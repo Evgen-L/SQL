@@ -100,7 +100,7 @@ HAVING  COUNT  (DISTINCT student.name) >= 35
 --LEFT(student_BM.id_student, CHARINDEX(' ', student_BM.id_student, 1)) AS surname_student
 SELECT DISTINCT student.name AS student, [group].name AS 'group', subject.name AS subject, mark.mark, lesson.date --task itself
 FROM lesson
-JOIN [group] ON lesson.id_group = [group].id_group --вопрос, а на что ориентируется LEFT JOIN в синтаксисе, на название таблицы или на равенство? на равенство
+JOIN [group] ON lesson.id_group = [group].id_group 
 JOIN student ON student.id_group = [group].id_group
 JOIN subject ON lesson.id_subject = subject.id_subject
 LEFT JOIN mark ON student.id_student = mark.id_student
