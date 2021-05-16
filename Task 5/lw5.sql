@@ -104,11 +104,23 @@ ORDER BY room_in_booking.checkout_date DESC
 --добавить 2 дня к дате отъезда / add 2 days to the departure date
 UPDATE room_in_booking 
 SET checkout_date = DATEADD(day, 2, checkout_date)
-WHERE checkin_date = '2019-05-10'
+FROM client 
+JOIN booking ON client.id_client = booking.id_client 
+JOIN room_in_booking ON booking.id_booking = room_in_booking.id_booking
+JOIN room ON room_in_booking.id_room = room.id_room
+JOIN hotel ON room.id_hotel = hotel.id_hotel
+JOIN room_category ON room.id_room_category = room_category.id_room_category
+WHERE  (room_in_booking.checkin_date = '2019-05-10') AND (hotel.name = 'Космос') AND (room_category.name = 'Бизнес')
 
 --убрать 2 дня от даты отъезда / remove 2 days from the departure date
 UPDATE room_in_booking
 SET checkout_date = DATEADD(day, -2, checkout_date)
+FROM client 
+JOIN booking ON client.id_client = booking.id_client 
+JOIN room_in_booking ON booking.id_booking = room_in_booking.id_booking
+JOIN room ON room_in_booking.id_room = room.id_room
+JOIN hotel ON room.id_hotel = hotel.id_hotel
+JOIN room_category ON room.id_room_category = room_category.id_room_category
 WHERE checkin_date = '2019-05-10'
 
 --#7 Найти все "пересекающиеся" варианты проживания. 
