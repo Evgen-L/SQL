@@ -90,7 +90,7 @@ FROM lesson
 JOIN [group] ON lesson.id_group = [group].id_group
 JOIN student ON [group].id_group = student.id_group
 JOIN subject ON lesson.id_subject = subject.id_subject
-JOIN mark ON mark.id_lesson = lesson.id_lesson
+RIGHT JOIN mark ON mark.id_lesson = lesson.id_lesson
 GROUP BY subject.name
 HAVING  COUNT  (DISTINCT student.name) >= 35 
 
@@ -104,7 +104,7 @@ JOIN [group] ON lesson.id_group = [group].id_group
 JOIN student ON student.id_group = [group].id_group
 JOIN subject ON lesson.id_subject = subject.id_subject
 LEFT JOIN mark ON student.id_student = mark.id_student
-WHERE [group].name = 'бл' 
+WHERE [group].id_group = 3 
 ORDER BY mark.mark DESC, subject.name, lesson.date DESC
 
 
@@ -123,7 +123,7 @@ FROM student_PS
 LEFT JOIN mark ON student_PS.id_student = mark.id_student
 JOIN lesson ON lesson.id_lesson = mark.id_lesson 
 JOIN subject ON lesson.id_subject = subject.id_subject
-WHERE (subject.name = 'ад') AND (lesson.date < '2019-05-12')
+WHERE (subject.id_subject = 1) AND (lesson.date < '2019-05-12')
 ORDER BY lesson.date
 
 DROP VIEW log_visits_PS_DB
@@ -133,7 +133,7 @@ FROM student_PS
 LEFT JOIN mark ON student_PS.id_student = mark.id_student
 JOIN lesson ON lesson.id_lesson = mark.id_lesson 
 JOIN subject ON lesson.id_subject = subject.id_subject
-WHERE (subject.name = 'ад')
+WHERE (subject.id_subject = 1)
 GO
 
 UPDATE  log_visits_PS_DB
