@@ -46,11 +46,11 @@ WHERE  (room_in_booking.checkin_date <= '2019-04-01' AND room_in_booking.checkou
 --#3 Дать список свободных номеров всех гостиниц на 22 апреля. / Submit a list of available rooms of all hotels for April 22.
 SELECT hotel.name AS hotel, room_category.name AS category, room.number, room_in_booking.checkin_date, room_in_booking.checkout_date
 FROM booking 
-JOIN room_in_booking ON booking.id_booking = room_in_booking.id_booking
-JOIN room ON room_in_booking.id_room = room.id_room
-JOIN hotel ON room.id_hotel = hotel.id_hotel
-JOIN room_category ON room.id_room_category = room_category.id_room_category
-WHERE NOT((room_in_booking.checkin_date) <= '2019-04-22' AND room_in_booking.checkout_date > '2019-04-22')
+RIGHT JOIN room_in_booking ON booking.id_booking = room_in_booking.id_booking
+RIGHT JOIN room ON room_in_booking.id_room = room.id_room
+RIGHT JOIN hotel ON room.id_hotel = hotel.id_hotel
+RIGHT JOIN room_category ON room.id_room_category = room_category.id_room_category
+WHERE NOT((room_in_booking.checkin_date) <= '2019-04-22' AND room_in_booking.checkout_date > '2019-04-22') OR room_in_booking.checkin_date IS NULL 
 ORDER BY room_in_booking.checkin_date
 
 --#4 Дать количество проживающих в гостинице “Космос” на 23 марта по каждой категории номеров / Give the number of people living in the Cosmos Hotel as of March 23 for each category of rooms                                                                                              
