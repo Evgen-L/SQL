@@ -44,20 +44,13 @@ JOIN room_category ON room.id_room_category = room_category.id_room_category
 WHERE  (room_in_booking.checkin_date <= '2019-04-01' AND room_in_booking.checkout_date > '2019-04-01'  ) AND (room_category.name = 'Люкс') AND (hotel.name = 'Космос')
 
 --#3 Дать список свободных номеров всех гостиниц на 22 апреля. / Submit a list of available rooms of all hotels for April 22.
-SELECT DISTINCT hotel.name AS hotel, room_category.name AS category, room.number 
+SELECT DISTINCT hotel.name,  room_category.name AS category, room.number 
 FROM booking 
 RIGHT JOIN room_in_booking ON booking.id_booking = room_in_booking.id_booking
 RIGHT JOIN room ON room_in_booking.id_room = room.id_room
 RIGHT JOIN hotel ON room.id_hotel = hotel.id_hotel
 RIGHT JOIN room_category ON room.id_room_category = room_category.id_room_category
-WHERE room_category.name IN
-(SELECT room_category.name AS category
-FROM booking 
-RIGHT JOIN room_in_booking ON booking.id_booking = room_in_booking.id_booking
-RIGHT JOIN room ON room_in_booking.id_room = room.id_room
-RIGHT JOIN hotel ON room.id_hotel = hotel.id_hotel
-RIGHT JOIN room_category ON room.id_room_category = room_category.id_room_category
-WHERE NOT((room_in_booking.checkin_date) <= '2019-04-22' AND room_in_booking.checkout_date > '2019-04-22') OR room_in_booking.checkin_date IS NULL ) 
+WHERE NOT((room_in_booking.checkin_date) <= '2019-04-22' AND room_in_booking.checkout_date > '2019-04-22') OR room_in_booking.checkin_date IS NULL 
 
 
 
