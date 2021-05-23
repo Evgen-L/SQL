@@ -68,24 +68,19 @@ GROUP BY room_category.name, hotel.name
 --#5 ƒать список последних проживавших клиентов по всем комнатам гостиницы У осмосФ, выехавшим в апреле с указанием даты выезда
 --/
 -- Provide a list of the last clients who stayed in all rooms of the Cosmos hotel who left in April, indicating the date of departure
-drop view stud_in_apr
-CREATE VIEW stud_in_apr AS
-SELECT   room.number  AS room_number, MAX(room_in_booking.checkout_date) AS max_checkout_date
-FROM client 
-JOIN booking ON client.id_client = booking.id_client 
-JOIN room_in_booking ON booking.id_booking = room_in_booking.id_booking
+ SELECT client.name, client.phone, last_check_out.id_room, last_check_out.number, last_check_out.max_checkout_date
+FROM client
+JOIN booking ON client.id_client = booking.id_client
+JOIN room_in_booking ON room_in_booking.id_booking = booking.id_booking
+JOIN
+(
+SELECT room.id_room, room.number, MAX(room_in_booking.checkout_date) AS max_checkout_date
+FROM room_in_booking
 JOIN room ON room_in_booking.id_room = room.id_room
 JOIN hotel ON room.id_hotel = hotel.id_hotel
-JOIN room_category ON room.id_room_category = room_category.id_room_category
-WHERE  (MONTH(room_in_booking.checkout_date) = '04') AND (hotel.name = ' осмос')
-GROUP BY room.number
-GO
-Select * FROM stud_in_apr;
-SELECT client.name AS Client, stud_in_apr.room_number, stud_in_apr.max_checkout_date
-FROM room_in_booking
-JOIN stud_in_apr  ON room_in_booking.checkout_date = stud_in_apr.max_checkout_date AND room_in_booking.id_room = stud_in_apr.room_number
-JOIN booking ON room_in_booking.id_booking = booking.id_booking
-JOIN client ON booking.id_client = client.id_client
+WHERE hotel.name = ' осмос' AND MONTH(room_in_booking.checkout_date) = '04'
+GROUP BY room.id_room, room.number
+) AS last_check_out ON last_check_out.id_room = room_in_booking.id_room and max_checkout_date = room_in_booking.checkout_date
 
 
 --уникальный список комнат по последним датам проживани€
